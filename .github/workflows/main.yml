@@ -121,7 +121,8 @@ jobs:
         cd app/src/main/cpp
         git clone https://github.com/ggerganov/whisper.cpp.git
         cd whisper.cpp && git checkout v1.7.1
-
+        cd whisper.cpp && git checkout v1.7.1 
+        allprojects{repositories{google()mavenCentral() maven { url "https://maven.goog… ^
     - name: Build Logic Configuration
       run: |
         cat <<EOF > app/src/main/cpp/CMakeLists.txt

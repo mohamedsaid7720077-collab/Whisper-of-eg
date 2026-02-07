@@ -54,7 +54,6 @@ jobs:
             params.n_threads = 4;
             params.language = "ar";
             params.initial_prompt = "يا هلا، بنكتب مصري عامي دلوقتي.";
-            params.strategy = WHISPER_SAMPLING_GREEDY;
             whisper_free(ctx);
             env->ReleaseStringUTFChars(jM, mP);
             return 0;
@@ -79,7 +78,7 @@ jobs:
             @Override protected void onCreate(Bundle savedInstanceState) {
                 super.onCreate(savedInstanceState);
                 TextView tv = new TextView(this);
-                tv.setText("Whisper Egypt Ready\nOptimized for Tab A7\nModel Embedded");
+                tv.setText("Whisper Egypt: Ready\nDevice: Tab A7 Optimized");
                 setContentView(tv);
             }
         }
@@ -87,7 +86,7 @@ jobs:
         cat <<EOF > app/src/main/AndroidManifest.xml
         <?xml version="1.0" encoding="utf-8"?>
         <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-            <application android:label="WhisperEgypt" android:theme="@style/AppTheme" android:extractNativeLibs="true">
+            <application android:label="WhisperEgypt" android:theme="@style/AppTheme">
                 <activity android:name=".MainActivity" android:exported="true">
                     <intent-filter>
                         <action android:name="android.intent.action.MAIN" />
@@ -108,8 +107,17 @@ jobs:
         cmake_minimum_required(VERSION 3.22.1)
         project("whisperoffline")
         set(WHISPER_DIR \${CMAKE_CURRENT_SOURCE_DIR}/whisper.cpp)
-        add_library(whisperoffline SHARED native-lib.cpp \${WHISPER_DIR}/src/whisper.cpp \${WHISPER_DIR}/ggml/src/ggml.c \${WHISPER_DIR}/ggml/src/ggml-alloc.c \${WHISPER_DIR}/ggml/src/ggml-backend.c \${WHISPER_DIR}/ggml/src/ggml-quants.c)
-        target_include_directories(whisperoffline PRIVATE \${WHISPER_DIR}/include \${WHISPER_DIR}/src \${WHISPER_DIR}/ggml/include)
+        add_library(whisperoffline SHARED 
+            native-lib.cpp 
+            \${WHISPER_DIR}/src/whisper.cpp 
+            \${WHISPER_DIR}/ggml/src/ggml.c 
+            \${WHISPER_DIR}/ggml/src/ggml-alloc.c 
+            \${WHISPER_DIR}/ggml/src/ggml-backend.c 
+            \${WHISPER_DIR}/ggml/src/ggml-quants.c)
+        target_include_directories(whisperoffline PRIVATE 
+            \${WHISPER_DIR}/include 
+            \${WHISPER_DIR}/src 
+            \${WHISPER_DIR}/ggml/include)
         find_library(log-lib log)
         target_link_libraries(whisperoffline \${log-lib})
         EOF
@@ -127,6 +135,9 @@ jobs:
                 targetSdk 34
                 versionCode 1
                 ndk { abiFilters "arm64-v8a" }
+            }
+            packagingOptions {
+                jniLibs { useLegacyPackaging = true }
             }
             sourceSets { main { assets.srcDirs = ['src/main/assets'] } }
             externalNativeBuild { cmake { path "src/main/cpp/CMakeLists.txt" } }
@@ -149,7 +160,7 @@ jobs:
         git config --global user.email "actions@github.com"
         echo "app/src/main/assets/whisper-model.bin" >> .gitignore
         git add .
-        git commit -m "build: auto sync" || echo "done"
+        git commit -m "fix: manifest and build config" || echo "done"
         git push origin ${{ github.ref_name }}
 
     - name: Upload Artifact
